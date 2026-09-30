@@ -10,7 +10,8 @@ class ActiveBusinessController extends Controller
     public function __invoke(Request $request, int $business): RedirectResponse
     {
         $selectedBusiness = $request->user()
-            ->businesses()
+            ->memberBusinesses()
+            ->wherePivot('is_active', true)
             ->findOrFail($business);
 
         $request->session()->put('active_business_id', $selectedBusiness->id);

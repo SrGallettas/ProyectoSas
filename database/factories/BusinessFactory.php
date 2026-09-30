@@ -11,6 +11,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class BusinessFactory extends Factory
 {
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Business $business): void {
+            $business->members()->syncWithoutDetaching([
+                $business->user_id => ['role' => Business::ROLE_OWNER, 'is_active' => true],
+            ]);
+        });
+    }
+
     /**
      * Define the model's default state.
      *

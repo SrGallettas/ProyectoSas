@@ -12,7 +12,8 @@ class BusinessController extends Controller
     public function index(Request $request): View
     {
         $businesses = $request->user()
-            ->businesses()
+            ->memberBusinesses()
+            ->wherePivot('is_active', true)
             ->orderBy('name')
             ->orderBy('id')
             ->get();
@@ -31,6 +32,7 @@ class BusinessController extends Controller
     public function store(StoreBusinessRequest $request): RedirectResponse
     {
         $business = $request->user()->businesses()->create($request->validated());
+        $business->members()->attach($request->user()->id, ['role' => 'owner', 'is_active' => true]);
         $request->session()->put('active_business_id', $business->id);
 
         return redirect()

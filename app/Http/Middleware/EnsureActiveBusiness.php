@@ -18,7 +18,8 @@ class EnsureActiveBusiness
     public function handle(Request $request, Closure $next): Response
     {
         $activeBusiness = $request->user()
-            ->businesses()
+            ->memberBusinesses()
+            ->wherePivot('is_active', true)
             ->find($request->session()->get('active_business_id'));
 
         if ($activeBusiness === null) {
@@ -30,6 +31,7 @@ class EnsureActiveBusiness
         }
 
         $request->attributes->set('activeBusiness', $activeBusiness);
+        $request->attributes->set('activeBusinessRole', $activeBusiness->pivot->role);
 
         $this->scopeRouteModel($request, $activeBusiness, 'product', 'products');
         $this->scopeRouteModel($request, $activeBusiness, 'customer', 'customers');

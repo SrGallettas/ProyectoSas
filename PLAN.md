@@ -168,9 +168,10 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [x] Registrar el usuario responsable de cada venta nueva.
 - [x] Registrar el usuario responsable del último guardado o corrección de un cierre.
 - [x] Mostrar el responsable en tickets, historial, caja y exportaciones.
-- [ ] Permitir que un comercio tenga propietario, encargados y camareros.
-- [ ] Invitar empleados de forma segura y gestionar altas y bajas.
-- [ ] Limitar acciones según el rol.
+- [x] Permitir que un comercio tenga propietario, encargados y camareros.
+- [x] Invitar empleados mediante un enlace temporal ligado a su correo.
+- [ ] Gestionar cambios de rol y desactivación de empleados.
+- [x] Limitar acciones según el rol.
 - [ ] Crear un registro inmutable de operaciones sensibles.
 
 ### Fase 2. Caja profesional
