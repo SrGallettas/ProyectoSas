@@ -49,7 +49,6 @@ class BusinessTeamControllerTest extends TestCase
 
         $this->actingAs($staff)->withSession($session)->get(route('sales.create'))->assertOk();
         $this->actingAs($staff)->withSession($session)->get(route('products.index'))->assertForbidden();
-        $this->actingAs($staff)->withSession($session)->get(route('cash-closures.index'))->assertForbidden();
         $this->actingAs($staff)->withSession($session)->get(route('team.index'))->assertForbidden();
     }
 

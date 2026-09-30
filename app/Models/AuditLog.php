@@ -42,6 +42,8 @@ class AuditLog extends Model
             'cash_movement.created' => 'Movimiento de caja',
             'sale.voided' => 'Venta anulada',
             'refund.created' => 'Devolución registrada',
+            'adjustment.requested' => 'Ajuste solicitado',
+            'adjustment.rejected' => 'Solicitud rechazada',
             default => 'Operación registrada',
         };
     }
@@ -62,6 +64,8 @@ class AuditLog extends Model
             'cash_movement.created' => [($after['type'] ?? null) === CashMovement::TYPE_INPUT ? 'Entrada de '.$this->money($after['amount'] ?? null) : 'Salida de '.$this->money($after['amount'] ?? null), 'Motivo: '.($after['reason'] ?? 'No indicado')],
             'sale.voided' => ['Importe: '.$this->money($after['total'] ?? null), 'Motivo: '.($after['reason'] ?? 'No indicado')],
             'refund.created' => ['Ticket #'.($after['sale_id'] ?? '—').' · '.$this->money($after['total'] ?? null).' · '.$this->paymentLabel($after['payment_method'] ?? null), 'Motivo: '.($after['reason'] ?? 'No indicado')],
+            'adjustment.requested' => ['Ticket #'.($after['sale_id'] ?? '—').' · '.$this->adjustmentLabel($after['type'] ?? null), 'Motivo: '.($after['reason'] ?? 'No indicado')],
+            'adjustment.rejected' => ['Ticket #'.($after['sale_id'] ?? '—').' · '.$this->adjustmentLabel($after['type'] ?? null), 'Rechazo: '.($after['reason'] ?? 'No indicado')],
             default => ['Los detalles técnicos están disponibles en la base de datos.'],
         };
     }
@@ -88,6 +92,11 @@ class AuditLog extends Model
     private function paymentLabel(?string $method): string
     {
         return $method === Sale::PAYMENT_CARD ? 'Tarjeta' : 'Efectivo';
+    }
+
+    private function adjustmentLabel(?string $type): string
+    {
+        return $type === 'refund' ? 'Devolución' : 'Anulación';
     }
 
     private function money(mixed $amount): string

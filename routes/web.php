@@ -7,7 +7,6 @@ use App\Http\Controllers\AdjustmentRequestController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessTeamController;
-use App\Http\Controllers\CashClosureController;
 use App\Http\Controllers\CashMovementController;
 use App\Http\Controllers\CashSessionController;
 use App\Http\Controllers\CategoryController;
@@ -45,7 +44,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show'])->middleware(EnsureActiveBusiness::class);
     Route::post('/sales/{sale}/void', [SaleController::class, 'void'])->name('sales.void')->middleware(EnsureActiveBusiness::class);
     Route::post('/sales/{sale}/refunds', [SaleController::class, 'refund'])->name('sales.refunds.store')->middleware(EnsureActiveBusiness::class);
-    Route::resource('cash-closures', CashClosureController::class)->only(['index', 'store'])->middleware([EnsureActiveBusiness::class, 'business.role:owner,manager']);
     Route::get('/cash-session', [CashSessionController::class, 'index'])->name('cash-sessions.index')->middleware(EnsureActiveBusiness::class);
     Route::post('/cash-session', [CashSessionController::class, 'store'])->name('cash-sessions.store')->middleware(EnsureActiveBusiness::class);
     Route::post('/cash-session/close', [CashSessionController::class, 'close'])->name('cash-sessions.close')->middleware(EnsureActiveBusiness::class);

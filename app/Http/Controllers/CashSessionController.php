@@ -24,8 +24,11 @@ class CashSessionController extends Controller
         $session = $business->cashSessions()->where('status', CashSession::STATUS_OPEN)->with(['openedBy', 'movements.user'])->first();
         ['cashSales' => $cashSales, 'cashRefunds' => $cashRefunds, 'inputs' => $inputs, 'outputs' => $outputs, 'expectedCash' => $expectedCash] = $session ? $this->summary($business, $session) : ['cashSales' => 0.0, 'cashRefunds' => 0.0, 'inputs' => 0.0, 'outputs' => 0.0, 'expectedCash' => 0.0];
         $closedSessions = $business->cashSessions()->where('status', CashSession::STATUS_CLOSED)->with(['openedBy', 'closedBy'])->latest('closed_at')->limit(20)->get();
+        $legacyClosures = in_array($request->attributes->get('activeBusinessRole'), [Business::ROLE_OWNER, Business::ROLE_MANAGER], true)
+            ? $business->cashClosures()->with('user')->latest('business_date')->limit(20)->get()
+            : collect();
 
-        return view('cash-sessions.index', compact('business', 'session', 'cashSales', 'cashRefunds', 'inputs', 'outputs', 'expectedCash', 'closedSessions'));
+        return view('cash-sessions.index', compact('business', 'session', 'cashSales', 'cashRefunds', 'inputs', 'outputs', 'expectedCash', 'closedSessions', 'legacyClosures'));
     }
 
     public function store(OpenCashSessionRequest $request): RedirectResponse

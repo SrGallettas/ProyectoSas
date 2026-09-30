@@ -182,6 +182,7 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [x] Anulación completa de ventas sin borrar el original.
 - [x] Devolución total o parcial sin borrar la venta original.
 - [x] Informes netos e historial específico de anulaciones y devoluciones.
+- [x] Integrar el histórico del cierre diario antiguo y retirar su flujo de escritura.
 - [x] Motivo obligatorio y autorización en dos pasos para operaciones solicitadas por camareros.
 - [ ] Historial completo de correcciones.
 
