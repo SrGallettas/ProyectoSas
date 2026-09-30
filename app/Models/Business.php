@@ -66,4 +66,9 @@ class Business extends Model
     {
         return $this->hasMany(BusinessInvitation::class);
     }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class);
+    }
 }

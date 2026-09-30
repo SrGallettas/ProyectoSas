@@ -67,6 +67,7 @@ class BusinessTeamControllerTest extends TestCase
         ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('business_user', ['business_id' => $business->id, 'user_id' => $employee->id, 'role' => Business::ROLE_MANAGER, 'is_active' => false]);
+        $this->assertDatabaseHas('audit_logs', ['business_id' => $business->id, 'user_id' => $owner->id, 'action' => 'member.updated', 'subject_id' => $employee->id]);
         $this->actingAs($employee)->withSession($session)->get(route('sales.index'))->assertRedirect(route('businesses.index'));
     }
 

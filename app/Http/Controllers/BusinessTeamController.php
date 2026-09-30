@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBusinessInvitationRequest;
 use App\Http\Requests\UpdateBusinessMemberRequest;
+use App\Models\AuditLog;
 use App\Models\Business;
 use App\Models\BusinessInvitation;
 use Illuminate\Http\RedirectResponse;
@@ -39,12 +40,13 @@ class BusinessTeamController extends Controller
 
         $business->invitations()->where('email', $email)->whereNull('accepted_at')->delete();
 
-        $business->invitations()->create([
+        $invitation = $business->invitations()->create([
             ...$request->validated(),
             'email' => $email,
             'token' => hash('sha256', $token),
             'expires_at' => now()->addDays(7),
         ]);
+        AuditLog::record($request, $business, 'invitation.created', $invitation, null, ['email' => $email, 'role' => $invitation->role]);
 
         return back()->with('status', 'Invitación creada.')->with('invitation_url', route('team.invitations.accept', $token));
     }
@@ -55,7 +57,9 @@ class BusinessTeamController extends Controller
         $business = $request->attributes->get('activeBusiness');
         $member = $business->members()->findOrFail($user);
         abort_if($member->pivot->role === Business::ROLE_OWNER, 422, 'No se puede modificar al propietario.');
+        $before = ['role' => $member->pivot->role, 'is_active' => (bool) $member->pivot->is_active];
         $business->members()->updateExistingPivot($member->id, $request->validated());
+        AuditLog::record($request, $business, 'member.updated', $member, $before, $request->validated());
 
         return back()->with('status', 'Acceso del empleado actualizado.');
     }
@@ -65,13 +69,16 @@ class BusinessTeamController extends Controller
         $invitationModel = $this->invitationForActiveBusiness($request, $invitation);
         $token = Str::random(64);
         $invitationModel->update(['token' => hash('sha256', $token), 'expires_at' => now()->addDays(7)]);
+        AuditLog::record($request, $invitationModel->business, 'invitation.regenerated', $invitationModel, null, ['email' => $invitationModel->email]);
 
         return back()->with('status', 'Invitación regenerada.')->with('invitation_url', route('team.invitations.accept', $token));
     }
 
     public function destroyInvitation(Request $request, int $invitation): RedirectResponse
     {
-        $this->invitationForActiveBusiness($request, $invitation)->delete();
+        $invitationModel = $this->invitationForActiveBusiness($request, $invitation);
+        AuditLog::record($request, $invitationModel->business, 'invitation.cancelled', $invitationModel, ['email' => $invitationModel->email, 'role' => $invitationModel->role]);
+        $invitationModel->delete();
 
         return back()->with('status', 'Invitación cancelada.');
     }

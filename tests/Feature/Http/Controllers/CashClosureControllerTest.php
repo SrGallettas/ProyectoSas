@@ -50,6 +50,7 @@ class CashClosureControllerTest extends TestCase
         $this->assertSame('15.00', $closure->counted_cash);
         $this->assertSame('0.00', $closure->difference);
         $this->assertTrue($closure->user->is($user));
+        $this->assertDatabaseHas('audit_logs', ['business_id' => $business->id, 'user_id' => $user->id, 'action' => 'cash_closure.corrected', 'subject_id' => $closure->id]);
     }
 
     public function test_closures_are_isolated_by_business(): void

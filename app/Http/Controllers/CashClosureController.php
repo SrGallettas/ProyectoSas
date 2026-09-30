@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCashClosureRequest;
+use App\Models\AuditLog;
 use App\Models\Business;
 use App\Models\Sale;
 use Carbon\CarbonImmutable;
@@ -35,6 +36,8 @@ class CashClosureController extends Controller
         $closure = $activeBusiness->cashClosures()
             ->whereDate('business_date', $selectedDate)
             ->firstOrNew();
+        $wasExisting = $closure->exists;
+        $before = $wasExisting ? $closure->only(['counted_cash', 'difference', 'closed_at', 'user_id']) : null;
 
         $closure->fill([
             'user_id' => $request->user()->id,
@@ -47,6 +50,7 @@ class CashClosureController extends Controller
             'ticket_count' => $summary->ticket_count,
             'closed_at' => now(),
         ])->save();
+        AuditLog::record($request, $activeBusiness, $wasExisting ? 'cash_closure.corrected' : 'cash_closure.created', $closure, $before, $closure->only(['counted_cash', 'difference', 'closed_at', 'user_id']));
 
         return redirect()->route('cash-closures.index', ['date' => $selectedDate->toDateString()])->with('status', 'Cierre de caja guardado correctamente.');
     }

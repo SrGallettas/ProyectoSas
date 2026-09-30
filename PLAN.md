@@ -172,7 +172,7 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [x] Invitar empleados mediante un enlace temporal ligado a su correo.
 - [x] Gestionar cambios de rol y desactivación de empleados.
 - [x] Limitar acciones según el rol.
-- [ ] Crear un registro inmutable de operaciones sensibles.
+- [x] Crear un registro inmutable de operaciones sensibles.
 
 ### Fase 2. Caja profesional
 

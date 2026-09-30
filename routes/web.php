@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AcceptBusinessInvitationController;
 use App\Http\Controllers\ActiveBusinessController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessTeamController;
 use App\Http\Controllers\CashClosureController;
@@ -44,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/team/members/{user}', [BusinessTeamController::class, 'update'])->name('team.members.update')->middleware(EnsureActiveBusiness::class);
     Route::post('/team/invitations/{invitation}/regenerate', [BusinessTeamController::class, 'regenerateInvitation'])->name('team.invitations.regenerate')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
     Route::delete('/team/invitations/{invitation}', [BusinessTeamController::class, 'destroyInvitation'])->name('team.invitations.destroy')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
+    Route::get('/activity', AuditLogController::class)->name('audit-logs.index')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
     Route::get('/team/invitations/{token}', AcceptBusinessInvitationController::class)->name('team.invitations.accept');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
