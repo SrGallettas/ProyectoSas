@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CloseCashSessionRequest;
 use App\Http\Requests\OpenCashSessionRequest;
 use App\Models\AuditLog;
 use App\Models\Business;
@@ -21,12 +22,10 @@ class CashSessionController extends Controller
         /** @var Business $business */
         $business = $request->attributes->get('activeBusiness');
         $session = $business->cashSessions()->where('status', CashSession::STATUS_OPEN)->with(['openedBy', 'movements.user'])->first();
-        $cashSales = $session ? (float) $business->sales()->where('payment_method', Sale::PAYMENT_CASH)->where('sold_at', '>=', $session->opened_at)->sum('total') : 0.0;
-        $inputs = $session ? (float) $session->movements->where('type', CashMovement::TYPE_INPUT)->sum('amount') : 0.0;
-        $outputs = $session ? (float) $session->movements->where('type', CashMovement::TYPE_OUTPUT)->sum('amount') : 0.0;
-        $expectedCash = $session ? (float) $session->opening_cash + $cashSales + $inputs - $outputs : 0.0;
+        ['cashSales' => $cashSales, 'inputs' => $inputs, 'outputs' => $outputs, 'expectedCash' => $expectedCash] = $session ? $this->summary($business, $session) : ['cashSales' => 0.0, 'inputs' => 0.0, 'outputs' => 0.0, 'expectedCash' => 0.0];
+        $closedSessions = $business->cashSessions()->where('status', CashSession::STATUS_CLOSED)->with(['openedBy', 'closedBy'])->latest('closed_at')->limit(20)->get();
 
-        return view('cash-sessions.index', compact('business', 'session', 'cashSales', 'inputs', 'outputs', 'expectedCash'));
+        return view('cash-sessions.index', compact('business', 'session', 'cashSales', 'inputs', 'outputs', 'expectedCash', 'closedSessions'));
     }
 
     public function store(OpenCashSessionRequest $request): RedirectResponse
@@ -43,5 +42,31 @@ class CashSessionController extends Controller
         AuditLog::record($request, $business, 'cash_session.opened', $session, null, ['opening_cash' => $session->opening_cash]);
 
         return back()->with('status', 'Turno de caja abierto.');
+    }
+
+    public function close(CloseCashSessionRequest $request): RedirectResponse
+    {
+        /** @var Business $business */
+        $business = $request->attributes->get('activeBusiness');
+        $session = $business->cashSessions()->where('status', CashSession::STATUS_OPEN)->with('movements')->first();
+        if ($session === null) {
+            throw ValidationException::withMessages(['closing_cash' => 'No hay ningún turno abierto.']);
+        }
+        $expectedCash = $this->summary($business, $session)['expectedCash'];
+        $closingCash = (float) $request->validated('closing_cash');
+        $session->update(['closed_by_user_id' => $request->user()->id, 'expected_cash' => $expectedCash, 'closing_cash' => $closingCash, 'difference' => $closingCash - $expectedCash, 'status' => CashSession::STATUS_CLOSED, 'closed_at' => now()]);
+        AuditLog::record($request, $business, 'cash_session.closed', $session, null, $session->only(['expected_cash', 'closing_cash', 'difference']));
+
+        return back()->with('status', 'Turno cerrado correctamente.');
+    }
+
+    /** @return array{cashSales: float, inputs: float, outputs: float, expectedCash: float} */
+    private function summary(Business $business, CashSession $session): array
+    {
+        $cashSales = (float) $business->sales()->where('payment_method', Sale::PAYMENT_CASH)->whereBetween('sold_at', [$session->opened_at, $session->closed_at ?? now()])->sum('total');
+        $inputs = (float) $session->movements->where('type', CashMovement::TYPE_INPUT)->sum('amount');
+        $outputs = (float) $session->movements->where('type', CashMovement::TYPE_OUTPUT)->sum('amount');
+
+        return compact('cashSales', 'inputs', 'outputs') + ['expectedCash' => (float) $session->opening_cash + $cashSales + $inputs - $outputs];
     }
 }

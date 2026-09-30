@@ -178,7 +178,7 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 
 - [x] Apertura de caja por turno.
 - [x] Fondo inicial y movimientos de entrada o salida.
-- [ ] Cierre por turno y por empleado.
+- [x] Cierre por turno y por empleado.
 - [ ] Anulación y devolución de ventas sin borrar el original.
 - [ ] Motivo obligatorio y autorización para operaciones sensibles.
 - [ ] Historial completo de correcciones.

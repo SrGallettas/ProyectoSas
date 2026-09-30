@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('cash-closures', CashClosureController::class)->only(['index', 'store'])->middleware([EnsureActiveBusiness::class, 'business.role:owner,manager']);
     Route::get('/cash-session', [CashSessionController::class, 'index'])->name('cash-sessions.index')->middleware(EnsureActiveBusiness::class);
     Route::post('/cash-session', [CashSessionController::class, 'store'])->name('cash-sessions.store')->middleware(EnsureActiveBusiness::class);
+    Route::post('/cash-session/close', [CashSessionController::class, 'close'])->name('cash-sessions.close')->middleware(EnsureActiveBusiness::class);
     Route::post('/cash-session/movements', [CashMovementController::class, 'store'])->name('cash-movements.store')->middleware(EnsureActiveBusiness::class);
     Route::get('/team', [BusinessTeamController::class, 'index'])->name('team.index')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
     Route::post('/team/invitations', [BusinessTeamController::class, 'store'])->name('team.invitations.store')->middleware(EnsureActiveBusiness::class);
