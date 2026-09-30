@@ -33,7 +33,9 @@ class RefundControllerTest extends TestCase
         $this->assertSame(2, $refund->lines->sole()->quantity);
         $this->assertSame(9, $product->refresh()->stock);
         $this->assertDatabaseHas('audit_logs', ['business_id' => $business->id, 'action' => 'refund.created', 'subject_id' => $refund->id]);
-        $this->actingAs($owner)->withSession($session)->get(route('dashboard'))->assertViewHas('revenue', 2.5);
+        $this->actingAs($owner)->withSession($session)->get(route('dashboard'))
+            ->assertViewHas('revenue', 2.5)
+            ->assertViewHas('topProducts', fn ($products): bool => (int) $products->first()->units_sold === 1);
     }
 
     public function test_sale_cannot_be_refunded_beyond_original_quantity(): void

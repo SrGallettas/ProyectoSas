@@ -181,6 +181,7 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [x] Cierre por turno y por empleado.
 - [x] Anulación completa de ventas sin borrar el original.
 - [x] Devolución total o parcial sin borrar la venta original.
+- [x] Informes netos e historial específico de anulaciones y devoluciones.
 - [ ] Motivo obligatorio y autorización para operaciones sensibles.
 - [ ] Historial completo de correcciones.
 

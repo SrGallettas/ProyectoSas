@@ -31,6 +31,7 @@ class SaleController extends Controller
         $activeBusiness = $request->attributes->get('activeBusiness');
         $sales = $this->filteredSalesQuery($request, $activeBusiness)
             ->with(['customer', 'user'])
+            ->withSum('refunds', 'total')
             ->latest('sold_at')
             ->latest('id')
             ->paginate(25)
@@ -46,6 +47,7 @@ class SaleController extends Controller
         $activeBusiness = $request->attributes->get('activeBusiness');
         $sales = $this->filteredSalesQuery($request, $activeBusiness)
             ->with(['customer', 'user'])
+            ->withSum('refunds', 'total')
             ->latest('sold_at')
             ->latest('id')
             ->get();
@@ -53,7 +55,7 @@ class SaleController extends Controller
         return response()->streamDownload(function () use ($sales): void {
             $output = fopen('php://output', 'w');
             fwrite($output, "\xEF\xBB\xBF");
-            fputcsv($output, ['Ticket', 'Fecha', 'Empleado', 'Cliente', 'Método de pago', 'Total'], ';');
+            fputcsv($output, ['Ticket', 'Fecha', 'Empleado', 'Cliente', 'Método de pago', 'Estado', 'Total bruto', 'Devuelto', 'Total neto'], ';');
 
             foreach ($sales as $sale) {
                 fputcsv($output, [
@@ -62,7 +64,10 @@ class SaleController extends Controller
                     $sale->user?->name ?? 'Sin registrar',
                     $sale->customer?->name ?? 'Sin identificar',
                     $sale->paymentMethodLabel(),
+                    $sale->voided_at ? 'Anulada' : ((float) $sale->refunds_sum_total > 0 ? 'Con devolución' : 'Completada'),
                     number_format((float) $sale->total, 2, ',', ''),
+                    number_format((float) $sale->refunds_sum_total, 2, ',', ''),
+                    number_format($sale->voided_at ? 0 : (float) $sale->total - (float) $sale->refunds_sum_total, 2, ',', ''),
                 ], ';');
             }
 

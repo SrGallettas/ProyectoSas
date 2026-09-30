@@ -7,6 +7,7 @@ use App\Models\Sale;
 use App\Models\SaleLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class InicioController extends Controller
@@ -79,13 +80,16 @@ class InicioController extends Controller
             ->latest('id')
             ->limit(10)
             ->get();
+        $refundedLines = DB::table('refund_lines')->select('sale_line_id')->selectRaw('SUM(quantity) as refunded_quantity')->groupBy('sale_line_id');
         $topProducts = SaleLine::query()
             ->join('sales', 'sales.id', '=', 'sale_lines.sale_id')
+            ->leftJoinSub($refundedLines, 'returned', 'returned.sale_line_id', '=', 'sale_lines.id')
             ->where('sales.business_id', $activeBusiness->id)
             ->whereNull('sales.voided_at')
             ->whereBetween('sales.sold_at', $selectedRange)
             ->select('sale_lines.product_name')
-            ->selectRaw('SUM(sale_lines.quantity) as units_sold, SUM(sale_lines.line_total) as revenue')
+            ->selectRaw('SUM(sale_lines.quantity - COALESCE(returned.refunded_quantity, 0)) as units_sold, SUM((sale_lines.quantity - COALESCE(returned.refunded_quantity, 0)) * sale_lines.unit_price) as revenue')
+            ->having('units_sold', '>', 0)
             ->groupBy('sale_lines.product_name')
             ->orderByDesc('units_sold')
             ->orderByDesc('revenue')
