@@ -37,6 +37,13 @@ El núcleo será un TPV táctil con el que un camarero pueda registrar una venta
 - **Cliente**: nombre y contacto opcional.
 - **Venta**: comercio, fecha, cliente opcional y total.
 - **Línea de venta**: producto, cantidad, precio aplicado y subtotal.
+- **Miembro del comercio**: relación entre usuario y comercio con rol y estado de acceso.
+- **Invitación**: acceso temporal ligado a un correo y a un rol.
+- **Turno de caja**: apertura, fondo inicial, responsable, cierre y diferencia.
+- **Movimiento de caja**: entrada o salida manual con importe, motivo y responsable.
+- **Devolución**: operación vinculada a una venta que conserva el ticket original.
+- **Solicitud de ajuste**: petición de anulación o devolución pendiente de aprobación.
+- **Registro de actividad**: historial inmutable de operaciones sensibles.
 
 ## Trabajo completado
 
@@ -96,7 +103,18 @@ El núcleo será un TPV táctil con el que un camarero pueda registrar una venta
 
 ## Estado actual
 
-La aplicación ya tiene el motor de un TPV: catálogo, clientes, ventas, stock, historial y tickets. La pantalla de venta funciona, pero aún parece un formulario administrativo y no es suficientemente rápida para trabajar detrás de una barra.
+La aplicación ya supera el primer MVP. Dispone de TPV táctil, equipo con roles, caja por turnos, anulaciones, devoluciones, aprobación en dos pasos, informes netos y auditoría. Los datos están aislados por comercio y el comportamiento crítico tiene cobertura automática.
+
+El proyecto está preparado para una validación manual completa en ordenador y tablet. Todavía no debe considerarse listo para vender ni utilizarse como software fiscal: faltan pruebas con usuarios reales, accesibilidad, infraestructura de producción y cumplimiento normativo.
+
+Estado técnico verificado el 30/09/2026:
+
+- 104 pruebas automáticas superadas.
+- 382 verificaciones.
+- Migraciones aplicadas correctamente.
+- Frontend compilado.
+- Rama `main` sincronizada con GitHub.
+- Plan manual disponible en `/home/pau/Escritorio/PRUEBAS_MANUALES_PROYECTO_SAS.md`.
 
 ## Próximos pasos
 
@@ -159,7 +177,7 @@ El MVP estará listo cuando dos usuarios puedan gestionar varios locales sin acc
 
 ## Siguiente acción concreta
 
-Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado y utilizable.
+Ejecutar el plan de pruebas manuales completo en ordenador y tablet, registrar incidencias y corregir los problemas encontrados antes de iniciar mesas y comandas.
 
 ## Hoja de ruta de producto — versión 2
 
@@ -174,6 +192,14 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [x] Limitar acciones según el rol.
 - [x] Crear un registro inmutable de operaciones sensibles.
 
+Resultado entregado:
+
+- Propietario, encargado y camarero con permisos distintos.
+- Invitaciones temporales ligadas al correo.
+- Cambio de rol, activación y desactivación de accesos.
+- Responsable guardado en ventas, cierres y operaciones sensibles.
+- Pantalla Actividad con descripciones legibles, fecha, usuario e IP.
+
 ### Fase 2. Caja profesional
 
 - [x] Apertura de caja por turno.
@@ -184,19 +210,48 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [x] Informes netos e historial específico de anulaciones y devoluciones.
 - [x] Integrar el histórico del cierre diario antiguo y retirar su flujo de escritura.
 - [x] Motivo obligatorio y autorización en dos pasos para operaciones solicitadas por camareros.
-- [ ] Historial completo de correcciones.
+- [x] Historial completo de correcciones y decisiones en Actividad.
+
+Resultado entregado:
+
+- Una sola caja abierta por comercio.
+- Fondo inicial, ventas en efectivo, entradas, salidas y devoluciones.
+- Efectivo esperado, contado y diferencia por turno.
+- Historial de turnos y conservación de cierres diarios antiguos en solo lectura.
+- Anulaciones sin borrar la venta original y con reposición de stock.
+- Devoluciones totales o parciales sin superar las unidades vendidas.
+- Solicitudes de camareros aprobadas o rechazadas por encargado o propietario.
+- Informes, ranking de productos y CSV basados en importes netos.
+- Pantalla Ajustes para consultar anulaciones y devoluciones.
+
+### Fase 2.5. Validación y experiencia de uso — siguiente fase
+
+- [ ] Ejecutar todas las pruebas de `PRUEBAS_MANUALES_PROYECTO_SAS.md`.
+- [ ] Probar el circuito completo con propietario, encargado y camarero reales.
+- [ ] Probar apertura, movimientos, ventas, devoluciones y cierre en tablet.
+- [ ] Verificar que una venta de tres productos tarda menos de diez segundos.
+- [ ] Revisar contraste, foco visible, etiquetas, teclado y lectores de pantalla.
+- [ ] Revisar mensajes de error y confirmaciones de operaciones sensibles.
+- [ ] Añadir confirmación visual antes de anular, devolver o cerrar un turno.
+- [ ] Revisar tablas y formularios en móvil vertical y tablet horizontal.
+- [ ] Registrar y corregir todas las incidencias críticas encontradas.
+- [ ] Recoger impresiones de al menos una persona que trabaje en hostelería.
 
 ### Fase 3. Servicio de sala
 
+- [ ] Diseñar estados de una comanda: abierta, enviada, cobrada y cancelada.
 - [ ] Mesas y zonas del local.
 - [ ] Comandas abiertas y edición durante el servicio.
 - [ ] Notas para cocina o barra.
+- [ ] Mover productos entre mesas o comandas.
 - [ ] División de cuenta y cobros parciales.
 - [ ] Descuentos con permisos.
+- [ ] Historial de cambios de cada comanda.
 - [ ] Impresión de tickets y comandas.
 
 ### Fase 4. Preparación para producción
 
+- [ ] Crear un entorno privado de pruebas separado del desarrollo local.
 - [ ] PostgreSQL como base de datos de producción.
 - [ ] Almacenamiento persistente para imágenes.
 - [ ] Copias de seguridad y restauración comprobada.
@@ -204,6 +259,7 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [ ] HTTPS, gestión segura de secretos y cabeceras de seguridad.
 - [ ] Seguimiento de errores, logs y métricas.
 - [ ] Despliegue automático de una versión privada de pruebas.
+- [ ] Documentar instalación, actualización y recuperación ante fallos.
 
 ### Fase 5. Producto SaaS
 
@@ -212,6 +268,8 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [ ] Panel interno de administración y soporte.
 - [ ] Privacidad, exportación y eliminación de datos.
 - [ ] Condiciones de uso y política de privacidad.
+- [ ] Gestión de periodos de prueba, cancelaciones y facturación de suscripciones.
+- [ ] Soporte para varios propietarios o transferencia de propiedad.
 
 ### Fase 6. Facturación y normativa española
 
@@ -219,6 +277,30 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [ ] Facturas simplificadas, completas y rectificativas.
 - [ ] Numeración, conservación e integridad de registros.
 - [ ] Analizar e implementar VeriFactu con validación profesional.
+- [ ] Validar el resultado con asesoría fiscal o profesional especializado.
+
+## Orden acordado para continuar
+
+1. Pruebas manuales y revisión en tablet.
+2. Corrección de incidencias y accesibilidad.
+3. Mesas, zonas y comandas abiertas.
+4. División de cuentas, descuentos e impresión.
+5. Preparación de infraestructura y despliegue privado.
+6. Validación con un negocio real.
+7. SaaS, suscripciones y administración interna.
+8. Facturación fiscal y VeriFactu con asesoramiento profesional.
+
+## Decisiones de seguridad y contabilidad
+
+- Las ventas nunca se borran para corregirlas.
+- Una anulación conserva el ticket, el motivo, el responsable y la fecha.
+- Una devolución es un documento separado y puede ser total o parcial.
+- No se puede devolver más cantidad de la vendida.
+- Los turnos cerrados no se reescriben mediante anulaciones posteriores.
+- Los camareros solicitan operaciones sensibles; encargado o propietario deciden.
+- Los registros de Actividad no se pueden modificar ni eliminar desde la aplicación.
+- El cierre diario antiguo se conserva únicamente como histórico de solo lectura.
+- Los informes deben mostrar importes netos después de anulaciones y devoluciones.
 
 ## Criterio de trabajo
 
