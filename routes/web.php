@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcceptBusinessInvitationController;
 use App\Http\Controllers\ActiveBusinessController;
 use App\Http\Controllers\AdjustmentReportController;
+use App\Http\Controllers\AdjustmentRequestController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessTeamController;
@@ -56,6 +57,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/team/invitations/{invitation}', [BusinessTeamController::class, 'destroyInvitation'])->name('team.invitations.destroy')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
     Route::get('/activity', AuditLogController::class)->name('audit-logs.index')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
     Route::get('/adjustments', AdjustmentReportController::class)->name('adjustments.index')->middleware([EnsureActiveBusiness::class, 'business.role:owner,manager']);
+    Route::post('/adjustment-requests', [AdjustmentRequestController::class, 'store'])->name('adjustment-requests.store')->middleware(EnsureActiveBusiness::class);
+    Route::get('/adjustment-requests', [AdjustmentRequestController::class, 'index'])->name('adjustment-requests.index')->middleware([EnsureActiveBusiness::class, 'business.role:owner,manager']);
+    Route::post('/adjustment-requests/{adjustment}/reject', [AdjustmentRequestController::class, 'reject'])->name('adjustment-requests.reject')->middleware([EnsureActiveBusiness::class, 'business.role:owner,manager']);
     Route::get('/team/invitations/{token}', AcceptBusinessInvitationController::class)->name('team.invitations.accept');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -81,4 +81,9 @@ class Business extends Model
     {
         return $this->hasMany(Refund::class);
     }
+
+    public function adjustmentRequests(): HasMany
+    {
+        return $this->hasMany(AdjustmentRequest::class);
+    }
 }

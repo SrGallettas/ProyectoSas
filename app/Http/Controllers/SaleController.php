@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRefundRequest;
 use App\Http\Requests\StoreSaleRequest;
 use App\Http\Requests\VoidSaleRequest;
+use App\Models\AdjustmentRequest;
 use App\Models\AuditLog;
 use App\Models\Business;
 use App\Models\CashSession;
@@ -186,6 +187,7 @@ class SaleController extends Controller
             $sale->update(['voided_by_user_id' => $request->user()->id, 'void_reason' => $request->validated('reason'), 'voided_at' => now()]);
         });
         AuditLog::record($request, $activeBusiness, 'sale.voided', $sale, null, ['total' => $sale->total, 'reason' => $sale->void_reason]);
+        $this->markRequestApproved($request, $activeBusiness, $sale, 'void');
 
         return back()->with('status', 'Venta anulada correctamente.');
     }
@@ -225,6 +227,7 @@ class SaleController extends Controller
             return $refund;
         });
         AuditLog::record($request, $activeBusiness, 'refund.created', $refund, null, $refund->only(['sale_id', 'total', 'payment_method', 'reason']));
+        $this->markRequestApproved($request, $activeBusiness, $sale, 'refund');
 
         return back()->with('status', 'Devolución registrada correctamente.');
     }
@@ -242,6 +245,16 @@ class SaleController extends Controller
     private function centsToPrice(int $cents): string
     {
         return sprintf('%d.%02d', intdiv($cents, 100), $cents % 100);
+    }
+
+    private function markRequestApproved(Request $request, Business $business, Sale $sale, string $type): void
+    {
+        $requestId = $request->integer('adjustment_request_id');
+        if ($requestId === 0) {
+            return;
+        }
+        $adjustment = $business->adjustmentRequests()->where('sale_id', $sale->id)->where('type', $type)->where('status', AdjustmentRequest::STATUS_PENDING)->findOrFail($requestId);
+        $adjustment->update(['status' => 'approved', 'reviewed_by_user_id' => $request->user()->id, 'reviewed_at' => now()]);
     }
 
     /** @return Builder<Sale> */
