@@ -28,8 +28,7 @@
                         {{ __('Clientes') }}
                     </x-nav-link>
                     <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">{{ __('Ventas') }}</x-nav-link>
-                    <x-nav-link :href="route('cash-closures.index')" :active="request()->routeIs('cash-closures.*')">{{ __('Caja') }}</x-nav-link>
-                    <x-nav-link :href="route('cash-sessions.index')" :active="request()->routeIs('cash-sessions.*')">{{ __('Turno') }}</x-nav-link>
+                    <x-nav-link :href="route('cash-sessions.index')" :active="request()->routeIs('cash-sessions.*')">{{ __('Caja') }}</x-nav-link>
                     @if (request()->attributes->get('activeBusinessRole') === 'owner')<x-nav-link :href="route('team.index')" :active="request()->routeIs('team.*')">{{ __('Equipo') }}</x-nav-link>@endif
                     @if (request()->attributes->get('activeBusinessRole') === 'owner')<x-nav-link :href="route('audit-logs.index')" :active="request()->routeIs('audit-logs.*')">{{ __('Actividad') }}</x-nav-link>@endif
                 </div>
@@ -100,8 +99,7 @@
                 {{ __('Clientes') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">{{ __('Ventas') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('cash-closures.index')" :active="request()->routeIs('cash-closures.*')">{{ __('Caja') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('cash-sessions.index')" :active="request()->routeIs('cash-sessions.*')">{{ __('Turno') }}</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('cash-sessions.index')" :active="request()->routeIs('cash-sessions.*')">{{ __('Caja') }}</x-responsive-nav-link>
             @if (request()->attributes->get('activeBusinessRole') === 'owner')<x-responsive-nav-link :href="route('team.index')" :active="request()->routeIs('team.*')">{{ __('Equipo') }}</x-responsive-nav-link>@endif
             @if (request()->attributes->get('activeBusinessRole') === 'owner')<x-responsive-nav-link :href="route('audit-logs.index')" :active="request()->routeIs('audit-logs.*')">{{ __('Actividad') }}</x-responsive-nav-link>@endif
         </div>

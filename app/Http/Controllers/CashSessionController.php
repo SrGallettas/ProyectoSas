@@ -63,7 +63,7 @@ class CashSessionController extends Controller
     /** @return array{cashSales: float, inputs: float, outputs: float, expectedCash: float} */
     private function summary(Business $business, CashSession $session): array
     {
-        $cashSales = (float) $business->sales()->where('payment_method', Sale::PAYMENT_CASH)->whereBetween('sold_at', [$session->opened_at, $session->closed_at ?? now()])->sum('total');
+        $cashSales = (float) $business->sales()->completed()->where('payment_method', Sale::PAYMENT_CASH)->whereBetween('sold_at', [$session->opened_at, $session->closed_at ?? now()])->sum('total');
         $inputs = (float) $session->movements->where('type', CashMovement::TYPE_INPUT)->sum('amount');
         $outputs = (float) $session->movements->where('type', CashMovement::TYPE_OUTPUT)->sum('amount');
 

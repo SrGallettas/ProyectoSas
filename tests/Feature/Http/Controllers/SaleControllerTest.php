@@ -133,4 +133,36 @@ class SaleControllerTest extends TestCase
         $this->assertStringContainsString('12,50', $content);
         $this->assertStringNotContainsString('999,00', $content);
     }
+
+    public function test_manager_can_void_sale_and_stock_and_reports_are_corrected(): void
+    {
+        $owner = User::factory()->create();
+        $manager = User::factory()->create();
+        $business = Business::factory()->for($owner)->create();
+        $business->members()->attach($manager, ['role' => Business::ROLE_MANAGER, 'is_active' => true]);
+        $product = Product::factory()->for($business)->create(['price' => '5.00', 'stock' => 8]);
+        $session = ['active_business_id' => $business->id];
+        $this->actingAs($manager)->withSession($session)->post(route('sales.store'), ['checkout_token' => (string) Str::uuid(), 'payment_method' => Sale::PAYMENT_CASH, 'products' => [$product->id => 2]]);
+        $sale = $business->sales()->sole();
+
+        $this->actingAs($manager)->withSession($session)->post(route('sales.void', $sale), ['reason' => 'Cobro duplicado'])->assertSessionHasNoErrors();
+
+        $this->assertSame(8, $product->refresh()->stock);
+        $this->assertSame('Cobro duplicado', $sale->refresh()->void_reason);
+        $this->assertTrue($sale->voidedBy->is($manager));
+        $this->assertDatabaseHas('audit_logs', ['business_id' => $business->id, 'action' => 'sale.voided', 'subject_id' => $sale->id]);
+        $this->actingAs($owner)->withSession($session)->get(route('dashboard'))->assertViewHas('revenue', 0.0);
+    }
+
+    public function test_staff_cannot_void_sale(): void
+    {
+        $owner = User::factory()->create();
+        $staff = User::factory()->create();
+        $business = Business::factory()->for($owner)->create();
+        $business->members()->attach($staff, ['role' => Business::ROLE_STAFF, 'is_active' => true]);
+        $sale = Sale::factory()->for($business)->create();
+
+        $this->actingAs($staff)->withSession(['active_business_id' => $business->id])->post(route('sales.void', $sale), ['reason' => 'No autorizado'])->assertForbidden();
+        $this->assertNull($sale->fresh()->voided_at);
+    }
 }

@@ -16,6 +16,7 @@
             @endif
 
             <div class="bg-white p-8 shadow sm:rounded-lg">
+                @if ($sale->voided_at)<div class="mb-5 rounded-xl bg-red-50 p-4 text-red-800"><p class="font-bold">Venta anulada</p><p class="text-sm">{{ $sale->void_reason }}</p></div>@endif
                 <div class="border-b pb-4">
                     <h3 class="text-xl font-bold">{{ $activeBusiness->name }}</h3>
                     <p>{{ $sale->sold_at->format('d/m/Y H:i') }}</p>
@@ -36,6 +37,7 @@
                     <a href="{{ route('sales.create') }}" class="rounded-lg bg-green-600 px-5 py-3 text-center font-bold text-white hover:bg-green-700">Empezar otra venta</a>
                     <a href="{{ route('sales.index') }}" class="rounded-lg bg-gray-100 px-5 py-3 text-center font-semibold text-gray-700 hover:bg-gray-200">Ver historial</a>
                 </div>
+                @if (!$sale->voided_at && in_array(request()->attributes->get('activeBusinessRole'), ['owner', 'manager'], true))<form method="POST" action="{{ route('sales.void', $sale) }}" class="mt-6 border-t pt-5">@csrf<label for="reason" class="text-sm font-medium">Motivo de anulación</label><div class="mt-2 flex gap-2"><input id="reason" name="reason" required minlength="5" maxlength="255" class="min-w-0 flex-1 rounded-lg border-gray-300" placeholder="Cobro duplicado, producto equivocado…"><button class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white">Anular venta</button></div><x-input-error :messages="$errors->get('reason')" class="mt-2"/></form>@endif
             </div>
         </div>
     </div>

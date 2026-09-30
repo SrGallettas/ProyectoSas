@@ -67,6 +67,7 @@ class CashClosureController extends Controller
     private function dailySummary(Business $business, CarbonImmutable $date): Sale
     {
         return $business->sales()
+            ->completed()
             ->whereBetween('sold_at', [$date->startOfDay(), $date->endOfDay()])
             ->selectRaw(
                 'COUNT(*) as ticket_count,

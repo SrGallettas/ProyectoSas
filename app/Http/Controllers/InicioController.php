@@ -31,6 +31,7 @@ class InicioController extends Controller
         $selectedRange = [$rangeStart, $rangeEnd];
 
         $summary = $activeBusiness->sales()
+            ->completed()
             ->whereBetween('sold_at', $selectedRange)
             ->selectRaw(
                 'COUNT(*) as ticket_count,
@@ -57,12 +58,14 @@ class InicioController extends Controller
             default => $rangeEnd->subDay(),
         };
         $previousSummary = $activeBusiness->sales()
+            ->completed()
             ->whereBetween('sold_at', [$previousRangeStart, $previousRangeEnd])
             ->selectRaw('COUNT(*) as ticket_count, COALESCE(SUM(total), 0) as revenue')
             ->firstOrFail();
         $revenueChange = $this->percentageChange((float) $previousSummary->revenue, $revenue);
         $ticketChange = $this->percentageChange((float) $previousSummary->ticket_count, $ticketCount);
         $recentSales = $activeBusiness->sales()
+            ->completed()
             ->with('customer')
             ->whereBetween('sold_at', $selectedRange)
             ->latest('sold_at')
@@ -72,6 +75,7 @@ class InicioController extends Controller
         $topProducts = SaleLine::query()
             ->join('sales', 'sales.id', '=', 'sale_lines.sale_id')
             ->where('sales.business_id', $activeBusiness->id)
+            ->whereNull('sales.voided_at')
             ->whereBetween('sales.sold_at', $selectedRange)
             ->select('sale_lines.product_name')
             ->selectRaw('SUM(sale_lines.quantity) as units_sold, SUM(sale_lines.line_total) as revenue')
