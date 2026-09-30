@@ -176,8 +176,8 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 
 ### Fase 2. Caja profesional
 
-- [ ] Apertura de caja por turno.
-- [ ] Fondo inicial y movimientos de entrada o salida.
+- [x] Apertura de caja por turno.
+- [x] Fondo inicial y movimientos de entrada o salida.
 - [ ] Cierre por turno y por empleado.
 - [ ] Anulación y devolución de ventas sin borrar el original.
 - [ ] Motivo obligatorio y autorización para operaciones sensibles.

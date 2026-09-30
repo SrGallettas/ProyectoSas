@@ -6,6 +6,8 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessTeamController;
 use App\Http\Controllers\CashClosureController;
+use App\Http\Controllers\CashMovementController;
+use App\Http\Controllers\CashSessionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InicioController;
@@ -40,6 +42,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/sales/export', [SaleController::class, 'export'])->name('sales.export')->middleware(EnsureActiveBusiness::class);
     Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show'])->middleware(EnsureActiveBusiness::class);
     Route::resource('cash-closures', CashClosureController::class)->only(['index', 'store'])->middleware([EnsureActiveBusiness::class, 'business.role:owner,manager']);
+    Route::get('/cash-session', [CashSessionController::class, 'index'])->name('cash-sessions.index')->middleware(EnsureActiveBusiness::class);
+    Route::post('/cash-session', [CashSessionController::class, 'store'])->name('cash-sessions.store')->middleware(EnsureActiveBusiness::class);
+    Route::post('/cash-session/movements', [CashMovementController::class, 'store'])->name('cash-movements.store')->middleware(EnsureActiveBusiness::class);
     Route::get('/team', [BusinessTeamController::class, 'index'])->name('team.index')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
     Route::post('/team/invitations', [BusinessTeamController::class, 'store'])->name('team.invitations.store')->middleware(EnsureActiveBusiness::class);
     Route::patch('/team/members/{user}', [BusinessTeamController::class, 'update'])->name('team.members.update')->middleware(EnsureActiveBusiness::class);
