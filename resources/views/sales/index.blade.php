@@ -1,0 +1,20 @@
+<x-app-layout>
+    <x-slot name="header"><div class="flex items-center justify-between gap-4"><div><h2 class="text-xl font-semibold">Historial de ventas</h2><p class="text-sm text-gray-500">{{ $activeBusiness->name }}</p></div><a href="{{ route('sales.create') }}" class="rounded-lg bg-gray-800 px-5 py-3 text-sm font-semibold text-white">Nueva venta</a></div></x-slot>
+    <div class="py-8">
+        <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:px-8">
+            <form method="GET" action="{{ route('sales.index') }}" class="grid gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:grid-cols-2 xl:grid-cols-5">
+                <div><label for="date_from" class="text-sm font-medium text-gray-700">Desde</label><input id="date_from" name="date_from" type="date" value="{{ request('date_from') }}" class="mt-1 w-full rounded-lg border-gray-300 text-sm"></div>
+                <div><label for="date_to" class="text-sm font-medium text-gray-700">Hasta</label><input id="date_to" name="date_to" type="date" value="{{ request('date_to') }}" class="mt-1 w-full rounded-lg border-gray-300 text-sm"></div>
+                <div><label for="customer_id" class="text-sm font-medium text-gray-700">Cliente</label><select id="customer_id" name="customer_id" class="mt-1 w-full rounded-lg border-gray-300 text-sm"><option value="">Todos</option>@foreach ($customers as $customer)<option value="{{ $customer->id }}" @selected((string) request('customer_id') === (string) $customer->id)>{{ $customer->name }}</option>@endforeach</select></div>
+                <div><label for="payment_method" class="text-sm font-medium text-gray-700">Forma de pago</label><select id="payment_method" name="payment_method" class="mt-1 w-full rounded-lg border-gray-300 text-sm"><option value="">Todas</option><option value="cash" @selected(request('payment_method') === 'cash')>Efectivo</option><option value="card" @selected(request('payment_method') === 'card')>Tarjeta</option></select></div>
+                <div><label for="ticket_id" class="text-sm font-medium text-gray-700">N.º de ticket</label><input id="ticket_id" name="ticket_id" type="number" min="1" value="{{ request('ticket_id') }}" class="mt-1 w-full rounded-lg border-gray-300 text-sm" placeholder="Ej. 42"></div>
+                <div class="flex flex-wrap gap-2 sm:col-span-2 xl:col-span-5"><button class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700">Aplicar filtros</button><a href="{{ route('sales.index') }}" class="rounded-lg bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-200">Limpiar</a><a href="{{ route('sales.export', request()->query()) }}" class="rounded-lg bg-green-100 px-5 py-2.5 text-sm font-bold text-green-800 hover:bg-green-200">Exportar CSV</a></div>
+            </form>
+
+            <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+                <div class="overflow-x-auto"><table class="min-w-full divide-y"><thead class="bg-gray-50"><tr><th class="p-4 text-left">Ticket</th><th class="p-4 text-left">Fecha</th><th class="p-4 text-left">Cliente</th><th class="p-4 text-left">Pago</th><th class="p-4 text-right">Total</th><th></th></tr></thead><tbody class="divide-y">@forelse ($sales as $sale)<tr><td class="p-4 font-semibold">#{{ $sale->id }}</td><td class="whitespace-nowrap p-4">{{ $sale->sold_at->format('d/m/Y H:i') }}</td><td class="p-4">{{ $sale->customer?->name ?? 'Venta sin identificar' }}</td><td class="p-4">{{ $sale->paymentMethodLabel() }}</td><td class="p-4 text-right font-semibold">{{ number_format((float) $sale->total, 2, ',', '.') }} €</td><td class="p-4 text-right"><a class="font-semibold text-indigo-600" href="{{ route('sales.show', $sale) }}">Ver ticket</a></td></tr>@empty<tr><td colspan="6" class="p-10 text-center text-gray-500">No hay ventas que coincidan con los filtros.</td></tr>@endforelse</tbody></table></div>
+            </div>
+            {{ $sales->links() }}
+        </div>
+    </div>
+</x-app-layout>
