@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreRefundRequest;
 use App\Http\Requests\StoreSaleRequest;
 use App\Http\Requests\VoidSaleRequest;
 use App\Models\AuditLog;
@@ -155,7 +156,7 @@ class SaleController extends Controller
     {
         /** @var Business $activeBusiness */
         $activeBusiness = $request->attributes->get('activeBusiness');
-        $sale->load(['customer', 'lines', 'user']);
+        $sale->load(['customer', 'lines.refundLines', 'refunds.lines', 'user']);
 
         return view('sales.show', compact('activeBusiness', 'sale'));
     }
@@ -182,6 +183,45 @@ class SaleController extends Controller
         AuditLog::record($request, $activeBusiness, 'sale.voided', $sale, null, ['total' => $sale->total, 'reason' => $sale->void_reason]);
 
         return back()->with('status', 'Venta anulada correctamente.');
+    }
+
+    public function refund(StoreRefundRequest $request, Sale $sale): RedirectResponse
+    {
+        /** @var Business $activeBusiness */
+        $activeBusiness = $request->attributes->get('activeBusiness');
+        if ($sale->voided_at !== null) {
+            throw ValidationException::withMessages(['lines' => 'No se puede devolver una venta anulada.']);
+        }
+        $quantities = collect($request->validated('lines'))->map(fn ($quantity): int => (int) $quantity)->filter();
+        if ($quantities->isEmpty()) {
+            throw ValidationException::withMessages(['lines' => 'Selecciona al menos una unidad para devolver.']);
+        }
+
+        $refund = DB::transaction(function () use ($activeBusiness, $request, $sale, $quantities) {
+            $lines = $sale->lines()->with('product')->lockForUpdate()->get()->keyBy('id');
+            $totalCents = 0;
+            foreach ($quantities as $lineId => $quantity) {
+                $line = $lines->get($lineId);
+                $alreadyRefunded = $line ? (int) $line->refundLines()->sum('quantity') : 0;
+                if ($line === null || $quantity > $line->quantity - $alreadyRefunded) {
+                    throw ValidationException::withMessages(["lines.$lineId" => 'La cantidad supera las unidades disponibles para devolver.']);
+                }
+                $totalCents += $this->priceToCents($line->unit_price) * $quantity;
+            }
+            $refund = $sale->refunds()->create(['business_id' => $activeBusiness->id, 'user_id' => $request->user()->id, 'total' => $this->centsToPrice($totalCents), 'payment_method' => $request->validated('payment_method'), 'reason' => $request->validated('reason'), 'refunded_at' => now()]);
+            foreach ($quantities as $lineId => $quantity) {
+                $line = $lines->get($lineId);
+                $refund->lines()->create(['sale_line_id' => $line->id, 'product_id' => $line->product_id, 'product_name' => $line->product_name, 'quantity' => $quantity, 'unit_price' => $line->unit_price, 'line_total' => $this->centsToPrice($this->priceToCents($line->unit_price) * $quantity)]);
+                if ($line->product !== null && $line->product->stock !== null) {
+                    $line->product->increment('stock', $quantity);
+                }
+            }
+
+            return $refund;
+        });
+        AuditLog::record($request, $activeBusiness, 'refund.created', $refund, null, $refund->only(['sale_id', 'total', 'payment_method', 'reason']));
+
+        return back()->with('status', 'Devolución registrada correctamente.');
     }
 
     /**

@@ -22,10 +22,10 @@ class CashSessionController extends Controller
         /** @var Business $business */
         $business = $request->attributes->get('activeBusiness');
         $session = $business->cashSessions()->where('status', CashSession::STATUS_OPEN)->with(['openedBy', 'movements.user'])->first();
-        ['cashSales' => $cashSales, 'inputs' => $inputs, 'outputs' => $outputs, 'expectedCash' => $expectedCash] = $session ? $this->summary($business, $session) : ['cashSales' => 0.0, 'inputs' => 0.0, 'outputs' => 0.0, 'expectedCash' => 0.0];
+        ['cashSales' => $cashSales, 'cashRefunds' => $cashRefunds, 'inputs' => $inputs, 'outputs' => $outputs, 'expectedCash' => $expectedCash] = $session ? $this->summary($business, $session) : ['cashSales' => 0.0, 'cashRefunds' => 0.0, 'inputs' => 0.0, 'outputs' => 0.0, 'expectedCash' => 0.0];
         $closedSessions = $business->cashSessions()->where('status', CashSession::STATUS_CLOSED)->with(['openedBy', 'closedBy'])->latest('closed_at')->limit(20)->get();
 
-        return view('cash-sessions.index', compact('business', 'session', 'cashSales', 'inputs', 'outputs', 'expectedCash', 'closedSessions'));
+        return view('cash-sessions.index', compact('business', 'session', 'cashSales', 'cashRefunds', 'inputs', 'outputs', 'expectedCash', 'closedSessions'));
     }
 
     public function store(OpenCashSessionRequest $request): RedirectResponse
@@ -60,13 +60,14 @@ class CashSessionController extends Controller
         return back()->with('status', 'Turno cerrado correctamente.');
     }
 
-    /** @return array{cashSales: float, inputs: float, outputs: float, expectedCash: float} */
+    /** @return array{cashSales: float, cashRefunds: float, inputs: float, outputs: float, expectedCash: float} */
     private function summary(Business $business, CashSession $session): array
     {
         $cashSales = (float) $business->sales()->completed()->where('payment_method', Sale::PAYMENT_CASH)->whereBetween('sold_at', [$session->opened_at, $session->closed_at ?? now()])->sum('total');
+        $cashRefunds = (float) $business->refunds()->where('payment_method', Sale::PAYMENT_CASH)->whereBetween('refunded_at', [$session->opened_at, $session->closed_at ?? now()])->sum('total');
         $inputs = (float) $session->movements->where('type', CashMovement::TYPE_INPUT)->sum('amount');
         $outputs = (float) $session->movements->where('type', CashMovement::TYPE_OUTPUT)->sum('amount');
 
-        return compact('cashSales', 'inputs', 'outputs') + ['expectedCash' => (float) $session->opening_cash + $cashSales + $inputs - $outputs];
+        return compact('cashSales', 'cashRefunds', 'inputs', 'outputs') + ['expectedCash' => (float) $session->opening_cash + $cashSales - $cashRefunds + $inputs - $outputs];
     }
 }

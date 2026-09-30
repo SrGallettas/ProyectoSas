@@ -180,7 +180,7 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [x] Fondo inicial y movimientos de entrada o salida.
 - [x] Cierre por turno y por empleado.
 - [x] Anulación completa de ventas sin borrar el original.
-- [ ] Devolución total o parcial sin borrar la venta original.
+- [x] Devolución total o parcial sin borrar la venta original.
 - [ ] Motivo obligatorio y autorización para operaciones sensibles.
 - [ ] Historial completo de correcciones.
 

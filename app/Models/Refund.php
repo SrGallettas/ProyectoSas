@@ -2,36 +2,41 @@
 
 namespace App\Models;
 
-use Database\Factories\SaleLineFactory;
+use Database\Factories\RefundFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['product_id', 'product_name', 'quantity', 'unit_price', 'line_total'])]
-class SaleLine extends Model
+#[Fillable(['business_id', 'sale_id', 'user_id', 'total', 'payment_method', 'reason', 'refunded_at'])]
+class Refund extends Model
 {
-    /** @use HasFactory<SaleLineFactory> */
+    /** @use HasFactory<RefundFactory> */
     use HasFactory;
+
+    public function business(): BelongsTo
+    {
+        return $this->belongsTo(Business::class);
+    }
 
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
     }
 
-    public function product(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(User::class);
     }
 
-    public function refundLines(): HasMany
+    public function lines(): HasMany
     {
         return $this->hasMany(RefundLine::class);
     }
 
     protected function casts(): array
     {
-        return ['quantity' => 'integer', 'unit_price' => 'decimal:2', 'line_total' => 'decimal:2'];
+        return ['total' => 'decimal:2', 'refunded_at' => 'datetime'];
     }
 }

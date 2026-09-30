@@ -51,6 +51,11 @@ class Sale extends Model
         return $this->hasMany(SaleLine::class);
     }
 
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
     public function paymentMethodLabel(): string
     {
         return match ($this->payment_method) {

@@ -76,4 +76,9 @@ class Business extends Model
     {
         return $this->hasMany(CashSession::class);
     }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
 }

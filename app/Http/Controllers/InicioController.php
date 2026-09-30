@@ -43,9 +43,14 @@ class InicioController extends Controller
                 [Sale::PAYMENT_CASH, Sale::PAYMENT_CARD, Sale::PAYMENT_CASH, Sale::PAYMENT_CARD],
             )
             ->firstOrFail();
+        $refundSummary = $activeBusiness->refunds()->whereBetween('refunded_at', $selectedRange)
+            ->selectRaw('COALESCE(SUM(total), 0) as total, COALESCE(SUM(CASE WHEN payment_method = ? THEN total ELSE 0 END), 0) as cash_total, COALESCE(SUM(CASE WHEN payment_method = ? THEN total ELSE 0 END), 0) as card_total', [Sale::PAYMENT_CASH, Sale::PAYMENT_CARD])
+            ->firstOrFail();
+        $summary->cash_revenue = (float) $summary->cash_revenue - (float) $refundSummary->cash_total;
+        $summary->card_revenue = (float) $summary->card_revenue - (float) $refundSummary->card_total;
 
         $ticketCount = (int) $summary->ticket_count;
-        $revenue = (float) $summary->revenue;
+        $revenue = (float) $summary->revenue - (float) $refundSummary->total;
         $averageTicket = $ticketCount > 0 ? $revenue / $ticketCount : 0.0;
         $previousRangeStart = match ($period) {
             'week' => $rangeStart->subWeek(),
@@ -62,6 +67,8 @@ class InicioController extends Controller
             ->whereBetween('sold_at', [$previousRangeStart, $previousRangeEnd])
             ->selectRaw('COUNT(*) as ticket_count, COALESCE(SUM(total), 0) as revenue')
             ->firstOrFail();
+        $previousRefunds = (float) $activeBusiness->refunds()->whereBetween('refunded_at', [$previousRangeStart, $previousRangeEnd])->sum('total');
+        $previousSummary->revenue = (float) $previousSummary->revenue - $previousRefunds;
         $revenueChange = $this->percentageChange((float) $previousSummary->revenue, $revenue);
         $ticketChange = $this->percentageChange((float) $previousSummary->ticket_count, $ticketCount);
         $recentSales = $activeBusiness->sales()

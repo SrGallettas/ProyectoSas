@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/sales/export', [SaleController::class, 'export'])->name('sales.export')->middleware(EnsureActiveBusiness::class);
     Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show'])->middleware(EnsureActiveBusiness::class);
     Route::post('/sales/{sale}/void', [SaleController::class, 'void'])->name('sales.void')->middleware(EnsureActiveBusiness::class);
+    Route::post('/sales/{sale}/refunds', [SaleController::class, 'refund'])->name('sales.refunds.store')->middleware(EnsureActiveBusiness::class);
     Route::resource('cash-closures', CashClosureController::class)->only(['index', 'store'])->middleware([EnsureActiveBusiness::class, 'business.role:owner,manager']);
     Route::get('/cash-session', [CashSessionController::class, 'index'])->name('cash-sessions.index')->middleware(EnsureActiveBusiness::class);
     Route::post('/cash-session', [CashSessionController::class, 'store'])->name('cash-sessions.store')->middleware(EnsureActiveBusiness::class);
