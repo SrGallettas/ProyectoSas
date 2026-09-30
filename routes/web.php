@@ -41,6 +41,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('cash-closures', CashClosureController::class)->only(['index', 'store'])->middleware([EnsureActiveBusiness::class, 'business.role:owner,manager']);
     Route::get('/team', [BusinessTeamController::class, 'index'])->name('team.index')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
     Route::post('/team/invitations', [BusinessTeamController::class, 'store'])->name('team.invitations.store')->middleware(EnsureActiveBusiness::class);
+    Route::patch('/team/members/{user}', [BusinessTeamController::class, 'update'])->name('team.members.update')->middleware(EnsureActiveBusiness::class);
+    Route::post('/team/invitations/{invitation}/regenerate', [BusinessTeamController::class, 'regenerateInvitation'])->name('team.invitations.regenerate')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
+    Route::delete('/team/invitations/{invitation}', [BusinessTeamController::class, 'destroyInvitation'])->name('team.invitations.destroy')->middleware([EnsureActiveBusiness::class, 'business.role:owner']);
     Route::get('/team/invitations/{token}', AcceptBusinessInvitationController::class)->name('team.invitations.accept');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

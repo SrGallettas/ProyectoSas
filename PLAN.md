@@ -170,7 +170,7 @@ Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado 
 - [x] Mostrar el responsable en tickets, historial, caja y exportaciones.
 - [x] Permitir que un comercio tenga propietario, encargados y camareros.
 - [x] Invitar empleados mediante un enlace temporal ligado a su correo.
-- [ ] Gestionar cambios de rol y desactivación de empleados.
+- [x] Gestionar cambios de rol y desactivación de empleados.
 - [x] Limitar acciones según el rol.
 - [ ] Crear un registro inmutable de operaciones sensibles.
 
