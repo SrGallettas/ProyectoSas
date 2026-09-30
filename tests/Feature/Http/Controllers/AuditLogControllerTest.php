@@ -17,11 +17,16 @@ class AuditLogControllerTest extends TestCase
         $owner = User::factory()->create();
         $business = Business::factory()->for($owner)->create();
         $otherBusiness = Business::factory()->create();
-        $business->auditLogs()->create(['user_id' => $owner->id, 'action' => 'member.updated']);
+        $business->auditLogs()->create(['user_id' => $owner->id, 'action' => 'member.updated', 'before' => ['role' => 'staff', 'is_active' => true], 'after' => ['role' => 'manager', 'is_active' => false]]);
         $otherBusiness->auditLogs()->create(['action' => 'private.action']);
 
         $this->actingAs($owner)->withSession(['active_business_id' => $business->id])->get(route('audit-logs.index'))
-            ->assertOk()->assertSee('Acceso modificado')->assertDontSee('private.action');
+            ->assertOk()
+            ->assertSee('Acceso modificado')
+            ->assertSee('Rol: Camarero → Encargado')
+            ->assertSee('Acceso desactivado.')
+            ->assertDontSee('&quot;is_active&quot;', false)
+            ->assertDontSee('private.action');
     }
 
     public function test_non_owner_cannot_view_activity(): void
