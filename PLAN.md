@@ -159,4 +159,63 @@ El MVP estará listo cuando dos usuarios puedan gestionar varios locales sin acc
 
 ## Siguiente acción concreta
 
-Probar la aplicación en una pantalla táctil real y recoger impresiones de una persona de hostelería.
+Construir la versión 2 por entregas pequeñas, manteniendo cada bloque probado y utilizable.
+
+## Hoja de ruta de producto — versión 2
+
+### Fase 1. Equipo, permisos y trazabilidad
+
+- [x] Registrar el usuario responsable de cada venta nueva.
+- [x] Registrar el usuario responsable del último guardado o corrección de un cierre.
+- [x] Mostrar el responsable en tickets, historial, caja y exportaciones.
+- [ ] Permitir que un comercio tenga propietario, encargados y camareros.
+- [ ] Invitar empleados de forma segura y gestionar altas y bajas.
+- [ ] Limitar acciones según el rol.
+- [ ] Crear un registro inmutable de operaciones sensibles.
+
+### Fase 2. Caja profesional
+
+- [ ] Apertura de caja por turno.
+- [ ] Fondo inicial y movimientos de entrada o salida.
+- [ ] Cierre por turno y por empleado.
+- [ ] Anulación y devolución de ventas sin borrar el original.
+- [ ] Motivo obligatorio y autorización para operaciones sensibles.
+- [ ] Historial completo de correcciones.
+
+### Fase 3. Servicio de sala
+
+- [ ] Mesas y zonas del local.
+- [ ] Comandas abiertas y edición durante el servicio.
+- [ ] Notas para cocina o barra.
+- [ ] División de cuenta y cobros parciales.
+- [ ] Descuentos con permisos.
+- [ ] Impresión de tickets y comandas.
+
+### Fase 4. Preparación para producción
+
+- [ ] PostgreSQL como base de datos de producción.
+- [ ] Almacenamiento persistente para imágenes.
+- [ ] Copias de seguridad y restauración comprobada.
+- [ ] Correo transaccional y recuperación de acceso.
+- [ ] HTTPS, gestión segura de secretos y cabeceras de seguridad.
+- [ ] Seguimiento de errores, logs y métricas.
+- [ ] Despliegue automático de una versión privada de pruebas.
+
+### Fase 5. Producto SaaS
+
+- [ ] Alta guiada y configuración inicial del negocio.
+- [ ] Planes, suscripciones y límites por plan.
+- [ ] Panel interno de administración y soporte.
+- [ ] Privacidad, exportación y eliminación de datos.
+- [ ] Condiciones de uso y política de privacidad.
+
+### Fase 6. Facturación y normativa española
+
+- [ ] Datos fiscales, impuestos y desglose de IVA.
+- [ ] Facturas simplificadas, completas y rectificativas.
+- [ ] Numeración, conservación e integridad de registros.
+- [ ] Analizar e implementar VeriFactu con validación profesional.
+
+## Criterio de trabajo
+
+Cada entrega debe incluir migraciones reversibles, aislamiento entre comercios, permisos explícitos, pruebas automáticas, revisión en móvil/tablet y un commit independiente antes de empezar el siguiente bloque.

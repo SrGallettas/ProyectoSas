@@ -18,8 +18,8 @@ class CashClosureController extends Controller
         $activeBusiness = $request->attributes->get('activeBusiness');
         $selectedDate = $this->selectedDate($request->string('date')->toString());
         $summary = $this->dailySummary($activeBusiness, $selectedDate);
-        $existingClosure = $activeBusiness->cashClosures()->whereDate('business_date', $selectedDate)->first();
-        $closures = $activeBusiness->cashClosures()->latest('business_date')->paginate(20);
+        $existingClosure = $activeBusiness->cashClosures()->with('user')->whereDate('business_date', $selectedDate)->first();
+        $closures = $activeBusiness->cashClosures()->with('user')->latest('business_date')->paginate(20);
 
         return view('cash-closures.index', compact('activeBusiness', 'closures', 'existingClosure', 'selectedDate', 'summary'));
     }
@@ -37,6 +37,7 @@ class CashClosureController extends Controller
             ->firstOrNew();
 
         $closure->fill([
+            'user_id' => $request->user()->id,
             'business_date' => $selectedDate->toDateString(),
             'total_revenue' => $summary->total_revenue,
             'expected_cash' => $summary->expected_cash,

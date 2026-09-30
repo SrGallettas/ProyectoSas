@@ -20,6 +20,7 @@
                     <h3 class="text-xl font-bold">{{ $activeBusiness->name }}</h3>
                     <p>{{ $sale->sold_at->format('d/m/Y H:i') }}</p>
                     <p>{{ $sale->customer?->name ?? 'Venta sin identificar' }}</p>
+                    <p class="text-sm text-gray-500">Atendido por: {{ $sale->user?->name ?? 'Sin registrar' }}</p>
                     <p class="mt-2 inline-flex rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-700">Pago: {{ $sale->paymentMethodLabel() }}</p>
                 </div>
                 <div class="divide-y">

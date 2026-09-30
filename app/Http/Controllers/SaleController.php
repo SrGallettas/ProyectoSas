@@ -26,7 +26,7 @@ class SaleController extends Controller
         /** @var Business $activeBusiness */
         $activeBusiness = $request->attributes->get('activeBusiness');
         $sales = $this->filteredSalesQuery($request, $activeBusiness)
-            ->with('customer')
+            ->with(['customer', 'user'])
             ->latest('sold_at')
             ->latest('id')
             ->paginate(25)
@@ -41,7 +41,7 @@ class SaleController extends Controller
         /** @var Business $activeBusiness */
         $activeBusiness = $request->attributes->get('activeBusiness');
         $sales = $this->filteredSalesQuery($request, $activeBusiness)
-            ->with('customer')
+            ->with(['customer', 'user'])
             ->latest('sold_at')
             ->latest('id')
             ->get();
@@ -49,12 +49,13 @@ class SaleController extends Controller
         return response()->streamDownload(function () use ($sales): void {
             $output = fopen('php://output', 'w');
             fwrite($output, "\xEF\xBB\xBF");
-            fputcsv($output, ['Ticket', 'Fecha', 'Cliente', 'Método de pago', 'Total'], ';');
+            fputcsv($output, ['Ticket', 'Fecha', 'Empleado', 'Cliente', 'Método de pago', 'Total'], ';');
 
             foreach ($sales as $sale) {
                 fputcsv($output, [
                     $sale->id,
                     $sale->sold_at->format('d/m/Y H:i'),
+                    $sale->user?->name ?? 'Sin registrar',
                     $sale->customer?->name ?? 'Sin identificar',
                     $sale->paymentMethodLabel(),
                     number_format((float) $sale->total, 2, ',', ''),
@@ -94,12 +95,13 @@ class SaleController extends Controller
         $customerId = $request->validated('customer_id');
         $paymentMethod = $request->validated('payment_method');
         $checkoutToken = $request->validated('checkout_token');
+        $userId = $request->user()->id;
         if ($customerId !== null && ! $activeBusiness->customers()->whereKey($customerId)->exists()) {
             throw ValidationException::withMessages(['customer_id' => 'El cliente no pertenece al comercio activo.']);
         }
 
         try {
-            $sale = DB::transaction(function () use ($activeBusiness, $customerId, $paymentMethod, $checkoutToken, $quantities): Sale {
+            $sale = DB::transaction(function () use ($activeBusiness, $customerId, $paymentMethod, $checkoutToken, $quantities, $userId): Sale {
                 $products = $activeBusiness->products()->whereKey($quantities->keys())->lockForUpdate()->get()->keyBy('id');
                 if ($products->count() !== $quantities->count()) {
                     throw ValidationException::withMessages(['products' => 'Uno de los productos no pertenece al comercio activo.']);
@@ -113,6 +115,7 @@ class SaleController extends Controller
                     $totalCents += $this->priceToCents($product->price) * $quantity;
                 }
                 $sale = $activeBusiness->sales()->create([
+                    'user_id' => $userId,
                     'customer_id' => $customerId,
                     'total' => $this->centsToPrice($totalCents),
                     'payment_method' => $paymentMethod,
@@ -149,7 +152,7 @@ class SaleController extends Controller
     {
         /** @var Business $activeBusiness */
         $activeBusiness = $request->attributes->get('activeBusiness');
-        $sale->load(['customer', 'lines']);
+        $sale->load(['customer', 'lines', 'user']);
 
         return view('sales.show', compact('activeBusiness', 'sale'));
     }

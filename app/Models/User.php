@@ -24,6 +24,18 @@ class User extends Authenticatable
         return $this->hasMany(Business::class);
     }
 
+    /** @return HasMany<Sale, $this> */
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Sale::class);
+    }
+
+    /** @return HasMany<CashClosure, $this> */
+    public function cashClosures(): HasMany
+    {
+        return $this->hasMany(CashClosure::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

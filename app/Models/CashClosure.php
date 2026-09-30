@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['business_date', 'total_revenue', 'expected_cash', 'card_revenue', 'counted_cash', 'difference', 'ticket_count', 'closed_at'])]
+#[Fillable(['user_id', 'business_date', 'total_revenue', 'expected_cash', 'card_revenue', 'counted_cash', 'difference', 'ticket_count', 'closed_at'])]
 class CashClosure extends Model
 {
     /** @use HasFactory<CashClosureFactory> */
@@ -17,6 +17,11 @@ class CashClosure extends Model
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected function casts(): array

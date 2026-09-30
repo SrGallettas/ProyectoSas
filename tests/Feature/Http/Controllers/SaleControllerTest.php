@@ -32,6 +32,7 @@ class SaleControllerTest extends TestCase
         $response->assertSessionHasNoErrors()->assertRedirect(route('sales.show', $sale));
         $this->assertSame('3.00', $sale->total);
         $this->assertSame(Sale::PAYMENT_CASH, $sale->payment_method);
+        $this->assertTrue($sale->user->is($user));
         $this->assertSame(8, $product->refresh()->stock);
         $this->assertDatabaseHas('sale_lines', ['sale_id' => $sale->id, 'product_name' => 'Café', 'quantity' => 2, 'line_total' => 3.00]);
     }
@@ -119,7 +120,7 @@ class SaleControllerTest extends TestCase
         $user = User::factory()->create();
         $business = Business::factory()->for($user)->create();
         $otherBusiness = Business::factory()->for($user)->create();
-        $sale = Sale::factory()->for($business)->create(['total' => '12.50', 'payment_method' => Sale::PAYMENT_CARD, 'sold_at' => '2026-09-20 10:00:00']);
+        $sale = Sale::factory()->for($business)->for($user)->create(['total' => '12.50', 'payment_method' => Sale::PAYMENT_CARD, 'sold_at' => '2026-09-20 10:00:00']);
         Sale::factory()->for($otherBusiness)->create(['total' => '999.00', 'sold_at' => '2026-09-20 10:00:00']);
 
         $response = $this->actingAs($user)->withSession(['active_business_id' => $business->id])->get(route('sales.export', ['date_from' => '2026-09-01', 'date_to' => '2026-09-30']));
@@ -128,6 +129,7 @@ class SaleControllerTest extends TestCase
 
         $content = $response->streamedContent();
         $this->assertStringContainsString((string) $sale->id, $content);
+        $this->assertStringContainsString($user->name, $content);
         $this->assertStringContainsString('12,50', $content);
         $this->assertStringNotContainsString('999,00', $content);
     }
